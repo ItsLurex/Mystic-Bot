@@ -24,7 +24,7 @@ export const botConfig = {
     activities: [
       {
         name: "Custom Status", // required by Discord API, not shown in the client
-        state: "stalking",     // this is what people actually see
+        state: "Made by Lurex",     // this is what people actually see
         type: 4,               // Custom
       },
     ],
@@ -39,7 +39,7 @@ export const botConfig = {
     owners: process.env.OWNER_IDS?.split(",").map((id) => id.trim()).filter(Boolean) || [],
 
     // Default wait time between command uses (in seconds).
-    defaultCooldown: 3,
+    defaultCooldown: 1,
 
     // If true, old commands are removed before re-registering.
     deleteCommands: false,
@@ -93,8 +93,8 @@ export const botConfig = {
   embeds: {
     colors: {
       // Main brand colors.
-      primary: "#336699",
-      secondary: "#2F3136",
+      primary: "#800080",
+      secondary: "#51414F",
 
       // Standard status colors for success/error/warning/info messages.
       success: "#57F287",
