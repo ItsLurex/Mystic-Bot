@@ -646,7 +646,9 @@ class PostgreSQLDatabase {
                         xp: Number(levelRow.xp) || 0,
                         level: Number(levelRow.level) || 0,
                         totalXp: Number(levelRow.total_xp) || 0,
-                        lastMessage: Number(levelRow.last_message) || 0,
+                        lastMessage: levelRow.last_message
+    ? new Date(levelRow.last_message).getTime()
+    : 0,
                         rank: Number(levelRow.rank) || 0,
                     };
                 }
@@ -818,7 +820,7 @@ class PostgreSQLDatabase {
                          VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) 
                          ON CONFLICT (guild_id, user_id) DO UPDATE SET 
                          xp = $3, level = $4, total_xp = $5, last_message = $6, rank = $7, updated_at = CURRENT_TIMESTAMP`,
-                         [
+                        [
         parsedKey.guildId,
         parsedKey.userId,
         value.xp || 0,
