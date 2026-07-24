@@ -16,7 +16,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { botConfig } from '../../config/bot.js';
 
 const GIVEAWAY_MIN_WINNERS = botConfig.giveaways?.minimumWinners ?? 1;
-const GIVEAWAY_MAX_WINNERS = botConfig.giveaways?.maximumWinners ?? 10;
+const GIVEAWAY_MAX_WINNERS = botConfig.giveaways?.maximumWinners ?? 100;
 
 export default {
     data: new SlashCommandBuilder()
@@ -116,7 +116,7 @@ export default {
         const row = createGiveawayButtons(false);
 
         const giveawayMessage = await targetChannel.send({
-            content: "🎉 **NEW GIVEAWAY** 🎉",
+            content: "🎉 **NEW GIVEAWAY HAS STARTED** 🎉",
             embeds: [embed],
             components: [row],
         });
