@@ -12,6 +12,7 @@ const configuredTables = {
     welcome_configs: 'welcome_configs',
     leveling_configs: 'leveling_configs',
     user_levels: 'user_levels',
+    editable_messages: 'editable_messages',
     economy: 'economy',
     invite_tracking: 'invite_tracking',
     application_roles: 'application_roles',
