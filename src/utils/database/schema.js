@@ -226,6 +226,10 @@ export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_cache_data_expires_at ON ${t.cache_data}(expires_at)`,
     `CREATE INDEX IF NOT EXISTS idx_sticky_messages_guild_id ON ${t.sticky_messages}(guild_id)`,
     `CREATE UNIQUE INDEX IF NOT EXISTS idx_sticky_messages_channel_id ON ${t.sticky_messages}(channel_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_editable_messages_guild_id
+ON ${t.editable_messages}(guild_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_editable_messages_channel_id
+ON ${t.editable_messages}(channel_id)`,
 ];
 
 export const UPDATE_TIMESTAMP_FUNCTION = `
@@ -257,4 +261,8 @@ export const triggerDefinitions = [
     { name: 'update_tickets_updated_at', table: t.tickets },
     { name: 'update_afk_status_updated_at', table: t.afk_status },
     { name: 'update_sticky_messages_updated_at', table: t.sticky_messages },
+    {
+    name: 'update_editable_messages_updated_at',
+    table: t.editable_messages,
+},
 ];
