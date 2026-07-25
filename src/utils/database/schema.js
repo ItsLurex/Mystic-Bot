@@ -173,6 +173,20 @@ export const tableStatements = [
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
+    
+    `CREATE TABLE IF NOT EXISTS ${t.editable_messages} (
+    message_id VARCHAR(20) PRIMARY KEY,
+    guild_id VARCHAR(20) NOT NULL,
+    channel_id VARCHAR(20) NOT NULL,
+    creator_id VARCHAR(20) NOT NULL,
+    allowed_roles JSONB NOT NULL DEFAULT '[]',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (guild_id)
+        REFERENCES ${t.guilds}(id)
+        ON DELETE CASCADE
+)`,
 
     `CREATE TABLE IF NOT EXISTS ${t.sticky_messages} (
         id SERIAL PRIMARY KEY,
