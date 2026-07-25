@@ -68,7 +68,7 @@ class EditableMessages {
         if (!data)
             return false;
 
-        if (member.permissions.has('Administrator'))
+        import { PermissionFlagsBits } from 'discord.js';
             return true;
 
         let roles = data.allowed_roles;
