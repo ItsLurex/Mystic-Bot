@@ -142,6 +142,8 @@ data: new SlashCommandBuilder()
                 message: `I do not have permission to send messages in ${channel}.`,
             });
         }
+        
+const editable = interaction.options.getBoolean('editable') ?? false;
 
 const roles = [
     interaction.options.getRole('role1'),
@@ -150,7 +152,6 @@ const roles = [
     interaction.options.getRole('role4'),
     interaction.options.getRole('role5'),
 ].filter(Boolean);
-
 let sentMessage;
 
 if (!editable) {
