@@ -3,6 +3,9 @@ import {
     PermissionFlagsBits,
     ChannelType,
     MessageFlags,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
 } from 'discord.js';
 import { successEmbed } from '../../utils/embeds.js';
 import { logEvent } from '../../utils/moderation.js';
@@ -10,6 +13,7 @@ import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { sanitizeInput } from '../../utils/validation.js';
+import editableMessages from '../../utils/editableMessages.js';
 
 const TEXT_CHANNEL_TYPES = [
     ChannelType.GuildText,
@@ -30,16 +34,55 @@ function resolveTargetChannel(interaction) {
 }
 
 export default {
-    data: new SlashCommandBuilder()
-        .setName('say')
-        .setDescription('Send a plain message as the bot')
-        .addStringOption((option) =>
-            option
-                .setName('message')
-                .setDescription('The message the bot should send')
-                .setRequired(true)
-                .setMaxLength(2000),
-        )
+data: new SlashCommandBuilder()
+    .setName('say')
+    .setDescription('Send a plain message as the bot')
+
+    .addStringOption(option =>
+        option
+            .setName('message')
+            .setDescription('The message the bot should send')
+            .setRequired(true)
+            .setMaxLength(2000)
+    )
+
+    .addBooleanOption(option =>
+        option
+            .setName('editable')
+            .setDescription('Allow selected staff roles to edit this message later')
+            .setRequired(false)
+    )
+
+    .addRoleOption(option =>
+        option
+            .setName('role1')
+            .setDescription('Allowed role #1')
+    )
+
+    .addRoleOption(option =>
+        option
+            .setName('role2')
+            .setDescription('Allowed role #2')
+    )
+
+    .addRoleOption(option =>
+        option
+            .setName('role3')
+            .setDescription('Allowed role #3')
+    )
+
+    .addRoleOption(option =>
+        option
+            .setName('role4')
+            .setDescription('Allowed role #4')
+    )
+
+    .addRoleOption(option =>
+        option
+            .setName('role5')
+            .setDescription('Allowed role #5')
+    )
+
         .addChannelOption((option) =>
             option
                 .setName('channel')
@@ -100,7 +143,45 @@ export default {
             });
         }
 
-        const sentMessage = await channel.send({ content: message });
+const roles = [
+    interaction.options.getRole('role1'),
+    interaction.options.getRole('role2'),
+    interaction.options.getRole('role3'),
+    interaction.options.getRole('role4'),
+    interaction.options.getRole('role5'),
+].filter(Boolean);
+
+let sentMessage;
+
+if (!editable) {
+
+    sentMessage = await channel.send({
+        content: message,
+    });
+
+} else {
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('editable_message_edit')
+            .setLabel('✏️ Edit')
+            .setStyle(ButtonStyle.Secondary)
+    );
+
+    sentMessage = await channel.send({
+        content: message,
+        components: [row],
+    });
+
+    await editableMessages.create({
+        messageId: sentMessage.id,
+        guildId: interaction.guild.id,
+        channelId: channel.id,
+        creatorId: interaction.user.id,
+        allowedRoles: roles.map(r => r.id),
+    });
+
+}
 
         await logEvent({
             client,
