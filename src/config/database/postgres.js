@@ -19,6 +19,7 @@ const configuredTables = {
     temp_data: 'temp_data',
     cache_data: 'cache_data',
     sticky_messages: 'sticky_messages',
+    editable_messages: 'editable_messages',
 };
 
 const allowedTableIdentifiers = new Set([
