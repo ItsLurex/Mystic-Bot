@@ -195,14 +195,6 @@ export default {
       },
     });
 
-    await InteractionHelper.safeEditReply(interaction, {
-      embeds: [
-        successEmbed(
-          editable ? 'Editable Message Sent' : 'Message Sent',
-          `Posted in ${channel}. [Jump to message](${sentMessage.url})`,
-        ),
-      ],
-      flags: MessageFlags.Ephemeral,
-    });
+await InteractionHelper.safeDeleteReply(interaction);
   },
 };
