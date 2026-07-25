@@ -306,17 +306,7 @@ export default {
               await interaction.respond([]);
             }
           }
-        } else if (interaction.isButton()) {
-          if (interaction.customId.startsWith('shared_todo_')) {
-            const parts = interaction.customId.split('_');
-            const buttonType = parts.slice(0, 3).join('_');
-            const listId = parts[3];
-            const button = client.buttons.get(buttonType);
-
-            if (button) {
-              try {
-                await button.execute(interaction, client, [listId]);
-              } catch (error) {
+        }  catch (error) {
                 await handleInteractionError(interaction, error, withTraceContext({
                   type: 'button',
                   customId: interaction.customId,
