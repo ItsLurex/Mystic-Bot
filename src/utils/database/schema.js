@@ -11,17 +11,6 @@ import { pgConfig } from '../../config/database/postgres.js';
 const t = pgConfig.tables;
 
 export const tableStatements = [
-   `CREATE TABLE IF NOT EXISTS ${t.editable_messages} (
-    guild_id VARCHAR(20) NOT NULL,
-    channel_id VARCHAR(20) NOT NULL,
-    message_id VARCHAR(20) PRIMARY KEY,
-    role_ids JSONB NOT NULL DEFAULT '[]',
-    created_by VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
-)`, 
-    
     `CREATE TABLE IF NOT EXISTS ${t.guilds} (
         id VARCHAR(20) PRIMARY KEY,
         config JSONB DEFAULT '{}',
@@ -184,6 +173,22 @@ export const tableStatements = [
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.sticky_messages} (
+        id SERIAL PRIMARY KEY,
+        guild_id VARCHAR(20) NOT NULL,
+        channel_id VARCHAR(20) NOT NULL,
+        message_content TEXT,
+        embed_json JSONB,
+        enabled BOOLEAN NOT NULL DEFAULT TRUE,
+        last_message_id VARCHAR(20),
+        message_counter INTEGER NOT NULL DEFAULT 0,
+        threshold INTEGER NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE,
+        UNIQUE (guild_id, channel_id)
+    )`,
 ];
 
 export const indexStatements = [
@@ -205,7 +210,8 @@ export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_verification_audit_created_at ON ${t.verification_audit}(created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_temp_data_expires_at ON ${t.temp_data}(expires_at)`,
     `CREATE INDEX IF NOT EXISTS idx_cache_data_expires_at ON ${t.cache_data}(expires_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_editable_messages_guild_id ON ${t.editable_messages}(guild_id)`, 
+    `CREATE INDEX IF NOT EXISTS idx_sticky_messages_guild_id ON ${t.sticky_messages}(guild_id)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_sticky_messages_channel_id ON ${t.sticky_messages}(channel_id)`,
 ];
 
 export const UPDATE_TIMESTAMP_FUNCTION = `
@@ -236,4 +242,5 @@ export const triggerDefinitions = [
     { name: 'update_giveaways_updated_at', table: t.giveaways },
     { name: 'update_tickets_updated_at', table: t.tickets },
     { name: 'update_afk_status_updated_at', table: t.afk_status },
+    { name: 'update_sticky_messages_updated_at', table: t.sticky_messages },
 ];
