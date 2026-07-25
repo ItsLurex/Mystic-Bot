@@ -11,6 +11,17 @@ import { pgConfig } from '../../config/database/postgres.js';
 const t = pgConfig.tables;
 
 export const tableStatements = [
+   `CREATE TABLE IF NOT EXISTS ${t.editable_messages} (
+    guild_id VARCHAR(20) NOT NULL,
+    channel_id VARCHAR(20) NOT NULL,
+    message_id VARCHAR(20) PRIMARY KEY,
+    role_ids JSONB NOT NULL DEFAULT '[]',
+    created_by VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+)`, 
+    
     `CREATE TABLE IF NOT EXISTS ${t.guilds} (
         id VARCHAR(20) PRIMARY KEY,
         config JSONB DEFAULT '{}',
@@ -194,6 +205,7 @@ export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_verification_audit_created_at ON ${t.verification_audit}(created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_temp_data_expires_at ON ${t.temp_data}(expires_at)`,
     `CREATE INDEX IF NOT EXISTS idx_cache_data_expires_at ON ${t.cache_data}(expires_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_editable_messages_guild_id ON ${t.editable_messages}(guild_id)`, 
 ];
 
 export const UPDATE_TIMESTAMP_FUNCTION = `
