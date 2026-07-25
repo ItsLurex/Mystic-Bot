@@ -40,6 +40,7 @@ const allowedTableIdentifiers = new Set([
     'temp_data',
     'cache_data',
     'sticky_messages',
+    'editable_messages',
 ]);
 
 const validatedTables = Object.fromEntries(
