@@ -32,6 +32,7 @@ const allowedTableIdentifiers = new Set([
     'welcome_configs',
     'leveling_configs',
     'user_levels',
+    'editable_messages',
     'economy',
     'invite_tracking',
     'application_roles',
