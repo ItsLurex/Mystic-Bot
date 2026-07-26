@@ -1,4 +1,3 @@
-import { editableMessageModal } from '../../../handlers/editableMessageButtons.js';
 import {
   createTicketModalHandler,
   closeTicketModalHandler,
@@ -7,5 +6,4 @@ import {
 export default [
     createTicketModalHandler,
     closeTicketModalHandler,
-    editableMessageModal,
 ];
