@@ -13,13 +13,14 @@ import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { sanitizeInput } from '../../utils/validation.js';
-import editableMessages from '../../utils/editableMessages.js';
 import { createEditableMessage } from '../../utils/database/editableMessages.js';
 
 const TEXT_CHANNEL_TYPES = [
     ChannelType.GuildText,
     ChannelType.GuildAnnouncement,
 ];
+
+const MAX_ALLOWED_ROLES = 5;
 
 function resolveTargetChannel(interaction) {
     const selected = interaction.options.getChannel('channel');
@@ -34,56 +35,27 @@ function resolveTargetChannel(interaction) {
     return interaction.channel;
 }
 
+function buildEditButtonRow() {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('editable_message_edit')
+            .setLabel('Edit')
+            .setEmoji('✏️')
+            .setStyle(ButtonStyle.Secondary),
+    );
+}
+
 export default {
-data: new SlashCommandBuilder()
-    .setName('say')
-    .setDescription('Send a plain message as the bot')
-
-    .addStringOption(option =>
-        option
-            .setName('message')
-            .setDescription('The message the bot should send')
-            .setRequired(true)
-            .setMaxLength(2000)
-    )
-
-    .addBooleanOption(option =>
-        option
-            .setName('editable')
-            .setDescription('Allow selected staff roles to edit this message later')
-            .setRequired(false)
-    )
-
-    .addRoleOption(option =>
-        option
-            .setName('role1')
-            .setDescription('Allowed role #1')
-    )
-
-    .addRoleOption(option =>
-        option
-            .setName('role2')
-            .setDescription('Allowed role #2')
-    )
-
-    .addRoleOption(option =>
-        option
-            .setName('role3')
-            .setDescription('Allowed role #3')
-    )
-
-    .addRoleOption(option =>
-        option
-            .setName('role4')
-            .setDescription('Allowed role #4')
-    )
-
-    .addRoleOption(option =>
-        option
-            .setName('role5')
-            .setDescription('Allowed role #5')
-    )
-
+    data: new SlashCommandBuilder()
+        .setName('say')
+        .setDescription('Send a plain message as the bot')
+        .addStringOption((option) =>
+            option
+                .setName('message')
+                .setDescription('The message the bot should send')
+                .setRequired(true)
+                .setMaxLength(2000),
+        )
         .addChannelOption((option) =>
             option
                 .setName('channel')
@@ -91,6 +63,22 @@ data: new SlashCommandBuilder()
                 .addChannelTypes(...TEXT_CHANNEL_TYPES)
                 .setRequired(false),
         )
+        .addBooleanOption((option) =>
+            option
+                .setName('editable')
+                .setDescription('Let selected roles edit this message later via a button')
+                .setRequired(false),
+        )
+        .addRoleOption((option) =>
+            option.setName('role1').setDescription('Role allowed to edit this message'))
+        .addRoleOption((option) =>
+            option.setName('role2').setDescription('Role allowed to edit this message'))
+        .addRoleOption((option) =>
+            option.setName('role3').setDescription('Role allowed to edit this message'))
+        .addRoleOption((option) =>
+            option.setName('role4').setDescription('Role allowed to edit this message'))
+        .addRoleOption((option) =>
+            option.setName('role5').setDescription('Role allowed to edit this message'))
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setDMPermission(false),
     category: 'moderation',
@@ -143,61 +131,36 @@ data: new SlashCommandBuilder()
                 message: `I do not have permission to send messages in ${channel}.`,
             });
         }
-        
-const editable = interaction.options.getBoolean('editable') ?? false;
 
-const roles = [
-    interaction.options.getRole('role1'),
-    interaction.options.getRole('role2'),
-    interaction.options.getRole('role3'),
-    interaction.options.getRole('role4'),
-    interaction.options.getRole('role5'),
-].filter(Boolean);
-let sentMessage;
+        const editable = interaction.options.getBoolean('editable') ?? false;
+        const allowedRoles = editable
+            ? Array.from({ length: MAX_ALLOWED_ROLES }, (_, i) => interaction.options.getRole(`role${i + 1}`))
+                .filter(Boolean)
+            : [];
 
-if (!editable) {
+        const sentMessage = await channel.send({
+            content: message,
+            components: editable ? [buildEditButtonRow()] : [],
+        });
 
-    console.log("1");
+        if (editable) {
+            try {
+                await createEditableMessage({
+                    messageId: sentMessage.id,
+                    guildId: interaction.guild.id,
+                    channelId: channel.id,
+                    creatorId: interaction.user.id,
+                    allowedRoles: allowedRoles.map((role) => role.id),
+                });
+            } catch (error) {
+                logger.error(`Failed to register editable message ${sentMessage.id}:`, error);
+                // The message is already sent; don't fail the whole command over
+                // this, but strip the now-nonfunctional edit button so it doesn't
+                // mislead anyone into thinking editing will work.
+                await sentMessage.edit({ components: [] }).catch(() => {});
+            }
+        }
 
-    sentMessage = await channel.send({
-        content: message,
-    });
-
-    console.log("2");
-
-} else {
-
-    console.log("1");
-
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId('editable_message_edit')
-            .setLabel('✏️ Edit')
-            .setStyle(ButtonStyle.Secondary)
-    );
-
-    sentMessage = await channel.send({
-        content: message,
-        components: [row],
-    });
-
-    console.log("2");
-
-    console.log("3");
-
-    await editableMessages.create({
-        messageId: sentMessage.id,
-        guildId: interaction.guild.id,
-        channelId: channel.id,
-        creatorId: interaction.user.id,
-        allowedRoles: roles.map(r => r.id),
-    });
-
-    console.log("4");
-}
-
-        console.log("5");
-        
         await logEvent({
             client,
             guild: interaction.guild,
@@ -213,24 +176,26 @@ if (!editable) {
                     messageId: sentMessage.id,
                     moderatorId: interaction.user.id,
                     messageLength: message.length,
+                    editable,
+                    allowedRoleIds: allowedRoles.map((role) => role.id),
                 },
             },
         });
 
-        console.log("6");
+        const editableNote = editable
+            ? allowedRoles.length > 0
+                ? `\n\nEditable by: ${allowedRoles.map((role) => `${role}`).join(', ')} (and Administrators).`
+                : '\n\nEditable, but no roles were selected — only Administrators can use the Edit button.'
+            : '';
 
-        console.log("7");
-        
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 successEmbed(
                     'Message Sent',
-                    `Posted in ${channel}. [Jump to message](${sentMessage.url})`,
+                    `Posted in ${channel}. [Jump to message](${sentMessage.url})${editableNote}`,
                 ),
             ],
             flags: MessageFlags.Ephemeral,
         });
-
-        console.log("8");
     },
 };
