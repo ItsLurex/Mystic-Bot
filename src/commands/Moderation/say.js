@@ -14,6 +14,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { sanitizeInput } from '../../utils/validation.js';
 import editableMessages from '../../utils/editableMessages.js';
+import { createEditableMessage } from '../../utils/database/editableMessages.js';
 
 const TEXT_CHANNEL_TYPES = [
     ChannelType.GuildText,
