@@ -1,3 +1,5 @@
+import { editableMessageButton } from '../../../handlers/editableMessageButtons.js';
+
 import createTicketHandler, {
   closeTicketHandler,
   claimTicketHandler,
@@ -17,4 +19,5 @@ export default [
   unclaimTicketHandler,
   reopenTicketHandler,
   deleteTicketHandler,
+  editableMessageButton,
 ];
