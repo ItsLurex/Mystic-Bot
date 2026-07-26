@@ -12,6 +12,11 @@ export function getTicketKey(guildId, channelId) {
     return `guild:${guildId}:ticket:${channelId}`;
 }
 
+/** Degraded-mode (in-memory) fallback key for a single editable message row. */
+export function getEditableMessageKey(messageId) {
+    return `editable_message:${messageId}`;
+}
+
 /**
  * Degraded-mode (in-memory) fallback key for a single sticky message row.
  * Only used when PostgreSQL is unavailable — see utils/database/stickyMessages.js.
