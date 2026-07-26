@@ -183,20 +183,8 @@ if (!editable) {
 
     console.log("2");
 
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId('editable_message_edit')
-            .setLabel('✏️ Edit')
-            .setStyle(ButtonStyle.Secondary)
-    );
+    console.log("3");
 
-    sentMessage = await channel.send({
-        content: message,
-        components: [row],
-    });
-
-  console.log("3");
-    
     await editableMessages.create({
         messageId: sentMessage.id,
         guildId: interaction.guild.id,
@@ -206,7 +194,6 @@ if (!editable) {
     });
 
     console.log("4");
-    
 }
 
         console.log("5");
