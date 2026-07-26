@@ -646,7 +646,9 @@ class PostgreSQLDatabase {
                         xp: Number(levelRow.xp) || 0,
                         level: Number(levelRow.level) || 0,
                         totalXp: Number(levelRow.total_xp) || 0,
-                        lastMessage: Number(levelRow.last_message) || 0,
+                       lastMessage: levelRow.last_message
+    ? new Date(levelRow.last_message).getTime()
+    : 0,
                         rank: Number(levelRow.rank) || 0,
                     };
                 }
