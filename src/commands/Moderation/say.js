@@ -3,9 +3,6 @@ import {
     PermissionFlagsBits,
     ChannelType,
     MessageFlags,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
 } from 'discord.js';
 import { successEmbed } from '../../utils/embeds.js';
 import { logEvent } from '../../utils/moderation.js';
@@ -35,16 +32,6 @@ function resolveTargetChannel(interaction) {
     return interaction.channel;
 }
 
-function buildEditButtonRow() {
-    return new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId('editable_message_edit')
-            .setLabel('Edit')
-            .setEmoji('✏️')
-            .setStyle(ButtonStyle.Secondary),
-    );
-}
-
 export default {
     data: new SlashCommandBuilder()
         .setName('say')
@@ -66,7 +53,7 @@ export default {
         .addBooleanOption((option) =>
             option
                 .setName('editable')
-                .setDescription('Let selected roles edit this message later via a button')
+                .setDescription('Let selected roles edit this message later with /editmessage')
                 .setRequired(false),
         )
         .addRoleOption((option) =>
@@ -138,11 +125,12 @@ export default {
                 .filter(Boolean)
             : [];
 
-        const sentMessage = await channel.send({
-            content: message,
-            components: editable ? [buildEditButtonRow()] : [],
-        });
+        // No button, no components, no embed — the posted message is 100%
+        // plain content. Nobody in the channel sees any indication that it's
+        // editable; editing happens entirely out-of-band via /editmessage.
+        const sentMessage = await channel.send({ content: message });
 
+        let registrationFailed = false;
         if (editable) {
             try {
                 await createEditableMessage({
@@ -153,11 +141,8 @@ export default {
                     allowedRoles: allowedRoles.map((role) => role.id),
                 });
             } catch (error) {
+                registrationFailed = true;
                 logger.error(`Failed to register editable message ${sentMessage.id}:`, error);
-                // The message is already sent; don't fail the whole command over
-                // this, but strip the now-nonfunctional edit button so it doesn't
-                // mislead anyone into thinking editing will work.
-                await sentMessage.edit({ components: [] }).catch(() => {});
             }
         }
 
@@ -182,11 +167,13 @@ export default {
             },
         });
 
-        const editableNote = editable
-            ? allowedRoles.length > 0
-                ? `\n\nEditable by: ${allowedRoles.map((role) => `${role}`).join(', ')} (and Administrators).`
-                : '\n\nEditable, but no roles were selected — only Administrators can use the Edit button.'
-            : '';
+        const editableNote = !editable
+            ? ''
+            : registrationFailed
+                ? '\n\n⚠️ Editing could not be enabled for this message due to a database error — check the bot logs.'
+                : allowedRoles.length > 0
+                    ? `\n\nEditable via \`/editmessage\` by: ${allowedRoles.map((role) => `${role}`).join(', ')} (and Administrators).`
+                    : '\n\nEditable via `/editmessage`, but no roles were selected — only Administrators can use it.';
 
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
