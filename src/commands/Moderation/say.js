@@ -157,11 +157,17 @@ let sentMessage;
 
 if (!editable) {
 
+    console.log("1");
+
     sentMessage = await channel.send({
         content: message,
     });
 
+    console.log("2");
+
 } else {
+
+    console.log("1");
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -175,6 +181,22 @@ if (!editable) {
         components: [row],
     });
 
+    console.log("2");
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('editable_message_edit')
+            .setLabel('✏️ Edit')
+            .setStyle(ButtonStyle.Secondary)
+    );
+
+    sentMessage = await channel.send({
+        content: message,
+        components: [row],
+    });
+
+  console.log("3");
+    
     await editableMessages.create({
         messageId: sentMessage.id,
         guildId: interaction.guild.id,
@@ -183,8 +205,12 @@ if (!editable) {
         allowedRoles: roles.map(r => r.id),
     });
 
+    console.log("4");
+    
 }
 
+        console.log("5");
+        
         await logEvent({
             client,
             guild: interaction.guild,
@@ -204,6 +230,10 @@ if (!editable) {
             },
         });
 
+        console.log("6");
+
+        console.log("7");
+        
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 successEmbed(
@@ -213,5 +243,7 @@ if (!editable) {
             ],
             flags: MessageFlags.Ephemeral,
         });
+
+        console.log("8");
     },
 };
