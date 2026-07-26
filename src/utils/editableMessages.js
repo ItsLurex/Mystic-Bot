@@ -1,3 +1,4 @@
+import { PermissionFlagsBits } from 'discord.js';
 import { pgDb } from './postgresDatabase.js';
 import { pgConfig } from '../config/database/postgres.js';
 
@@ -62,22 +63,23 @@ class EditableMessages {
         );
     }
 
-    async canEdit(messageId, member) {
-        const data = await this.get(messageId);
+   async canEdit(messageId, member) {
+    const data = await this.get(messageId);
 
-        if (!data)
-            return false;
+    if (!data)
+        return false;
 
-        import { PermissionFlagsBits } from 'discord.js';
-            return true;
+    // Server administrators can always edit
+    if (member.permissions.has(PermissionFlagsBits.Administrator))
+        return true;
 
-        let roles = data.allowed_roles;
+    let roles = data.allowed_roles;
 
-        if (typeof roles === 'string')
-            roles = JSON.parse(roles);
+    if (typeof roles === 'string')
+        roles = JSON.parse(roles);
 
-        return member.roles.cache.some(role => roles.includes(role.id));
-    }
+    return member.roles.cache.some(role => roles.includes(role.id));
+}
 }
 
 export default new EditableMessages();
