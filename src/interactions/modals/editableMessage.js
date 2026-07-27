@@ -1,14 +1,14 @@
 import { MessageFlags } from 'discord.js';
-import { logger } from '../../../utils/logger.js';
-import { logEvent } from '../../../utils/moderation.js';
-import { sanitizeInput } from '../../../utils/validation.js';
-import { getEditableMessage, canEditMessage, deleteEditableMessage } from '../../../utils/database/editableMessages.js';
+import { logger } from '../../utils/logger.js';
+import { logEvent } from '../../utils/moderation.js';
+import { sanitizeInput } from '../../utils/validation.js';
+import { getEditableMessage, canEditMessage, deleteEditableMessage } from '../../utils/database/editableMessages.js';
 
 /**
- * Handles submission of the edit modal opened from the "✏️ Edit" button on
- * /say messages created with editable:true. Re-checks permission at submit
- * time (not just when the button was pressed) since roles can change in
- * between, then edits the live Discord message directly.
+ * Handles submission of the edit modal opened from /editmessage on messages
+ * created with /say editable:true. Re-checks permission at submit time (not
+ * just when /editmessage was run) since roles can change in between, then
+ * edits the live Discord message directly.
  */
 export default {
     name: 'editable_message_modal',
