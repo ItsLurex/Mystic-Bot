@@ -2,18 +2,13 @@ import {
     SlashCommandBuilder,
     PermissionFlagsBits,
     ChannelType,
-    MessageFlags,
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle,
     ActionRowBuilder,
 } from 'discord.js';
-import { successEmbed } from '../../utils/embeds.js';
-import { logger } from '../../utils/logger.js';
-import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
-import { sanitizeInput } from '../../utils/validation.js';
-import { sendSayMessage, stashPendingSay, buildEditableNote } from '../../services/sayService.js';
+import { stashPendingSay } from '../../services/sayService.js';
 
 const TEXT_CHANNEL_TYPES = [
     ChannelType.GuildText,
@@ -38,14 +33,7 @@ function resolveTargetChannel(interaction) {
 export default {
     data: new SlashCommandBuilder()
         .setName('say')
-        .setDescription('Send a plain message as the bot')
-        .addStringOption((option) =>
-            option
-                .setName('message')
-                .setDescription('The message to send (leave blank for a popup text box)')
-                .setRequired(false)
-                .setMaxLength(2000),
-        )
+        .setDescription('Send a message as the bot (opens a popup text box)')
         .addChannelOption((option) =>
             option
                 .setName('channel')
@@ -74,10 +62,9 @@ export default {
     category: 'moderation',
     abuseProtection: { maxAttempts: 8, windowMs: 60_000 },
 
-    // NOTE: this command intentionally does NOT defer immediately at the top
-    // anymore. If "message" is left blank we need to call showModal() as the
-    // very first response, which is only allowed before any defer/reply.
-    async execute(interaction, _config, client) {
+    // NOTE: this command must NOT defer. Showing a modal has to be the very
+    // first response to the interaction.
+    async execute(interaction) {
         const channel = resolveTargetChannel(interaction);
         if (!channel) {
             await replyUserError(interaction, {
@@ -113,55 +100,6 @@ export default {
                 .map((role) => role.id)
             : [];
 
-        const rawMessage = interaction.options.getString('message');
-
-        if (rawMessage) {
-            // Message typed inline — send right away, same as before.
-            const deferSuccess = await InteractionHelper.safeDefer(interaction, {
-                flags: MessageFlags.Ephemeral,
-            });
-            if (!deferSuccess) {
-                logger.warn('Say interaction defer failed', {
-                    userId: interaction.user.id,
-                    guildId: interaction.guildId,
-                    commandName: 'say',
-                });
-                return;
-            }
-
-            const message = sanitizeInput(rawMessage, 2000);
-            if (!message) {
-                await replyUserError(interaction, {
-                    type: ErrorTypes.VALIDATION,
-                    message: 'Message cannot be empty.',
-                });
-                return;
-            }
-
-            const { sentMessage, registrationFailed } = await sendSayMessage({
-                client,
-                guild: interaction.guild,
-                channel,
-                user: interaction.user,
-                message,
-                editable,
-                allowedRoleIds,
-            });
-
-            await InteractionHelper.safeEditReply(interaction, {
-                embeds: [
-                    successEmbed(
-                        'Message Sent',
-                        `Posted in ${channel}. [Jump to message](${sentMessage.url})${buildEditableNote(editable, registrationFailed, allowedRoleIds)}`,
-                    ),
-                ],
-                flags: MessageFlags.Ephemeral,
-            });
-            return;
-        }
-
-        // Message left blank — pop a proper multi-line text box instead of
-        // making someone type a long message into a single-line slash option.
         const token = interaction.id;
         stashPendingSay(token, {
             channelId: channel.id,
