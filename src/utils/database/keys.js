@@ -141,6 +141,20 @@ export function getGiveawayEntryKey(userId, giveawayId) {
 export function getGiveawayLockKey(messageId) {
     return `giveaway:lock:${messageId}`;
 }
+/** Degraded-mode (in-memory) fallback key for a single automod channel rule. */
+export function getAutomodRuleKey(channelId) {
+    return `automod_rule:${channelId}`;
+}
+
+/** Flat prefix used to scan every automod rule in degraded mode (filtered by guildId in-app). */
+export function getAutomodRulePrefix() {
+    return `automod_rule:`;
+}
+
+/** Degraded-mode (in-memory) fallback key for a guild's ignored roles list. */
+export function getIgnoredRolesKey(guildId) {
+    return `guild:${guildId}:ignored_roles`;
+}
 
 /**
  * Legacy key patterns mapped to canonical builders.
