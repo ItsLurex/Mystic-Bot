@@ -19,6 +19,7 @@ import {
   recordCorrectCount,
 } from '../services/countingGameService.js';
 import { handleMessageForSticky } from '../services/stickyService.js';
+import { handleAutoModMessage } from '../services/automodService.js';
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
 const MESSAGE_XP_RATE_LIMIT_WINDOW_MS = 10000;
@@ -31,8 +32,11 @@ export default {
 
       logger.debug(`Message received from ${message.author.tag}: ${message.content}`);
 
-      await handleMessageForSticky(message, client);
+     const wasAutoModerated = await handleAutoModMessage(message, client);
+      if (wasAutoModerated) return;
 
+      await handleMessageForSticky(message, client);
+      
       const countingProcessed = await handleCountingGame(message, client);
       if (countingProcessed) {
         return;
