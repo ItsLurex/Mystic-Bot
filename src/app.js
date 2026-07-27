@@ -16,6 +16,7 @@ import { runSafeTask, handleTaskError, ErrorCodes } from './utils/errorHandler.j
 import { initializeMusic } from './services/music/riffySetup.js';
 import { shutdownMusic } from './services/music/playerHandler.js';
 import { initializeStickyCache } from './services/stickyService.js';
+import { initAutoModCache } from './services/automodService.js';
 import pkg from '../package.json' with { type: 'json' };
 import { EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_LABEL } from './config/database/schemaVersion.js';
 
@@ -80,6 +81,10 @@ class TitanBot extends Client {
       startupLog('Loading sticky messages into cache...');
       const stickyCount = await initializeStickyCache(this);
       startupLog(`Sticky messages cached: ${stickyCount}`);
+
+      startupLog('Loading automod rules into cache...');
+      const automodCount = await initAutoModCache(this);
+      startupLog(`Automod rules cached: ${automodCount}`);
 
       startupLog('Loading commands...');
       await loadCommands(this);
