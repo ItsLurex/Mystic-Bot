@@ -20,6 +20,11 @@ const configuredTables = {
     cache_data: 'cache_data',
     sticky_messages: 'sticky_messages',
     editable_messages: 'editable_messages',
+    automod_channel_rules: 'automod_channel_rules',
+    ignored_roles: 'ignored_roles',
+    autoreact_channel_rules: 'autoreact_channel_rules',
+    invite_join_records: 'invite_join_records',
+    
 };
 
 const allowedTableIdentifiers = new Set([
@@ -41,6 +46,10 @@ const allowedTableIdentifiers = new Set([
     'cache_data',
     'sticky_messages',
     'editable_messages',
+    'automod_channel_rules',
+    'ignored_roles',
+    'autoreact_channel_rules',
+    'invite_join_records',
 ]);
 
 const validatedTables = Object.fromEntries(
