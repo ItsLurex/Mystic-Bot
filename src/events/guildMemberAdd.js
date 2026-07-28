@@ -31,53 +31,18 @@ export default {
             const permissions = channel?.isTextBased?.() && me ? channel.permissionsFor(me) : null;
             // Skip only the welcome message if permissions are missing; the rest of the
             // join pipeline (auto-role, verification, logging, counters) must still run.
-            if (permissions?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages])) {
+             if (permissions?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages])) {
                 const formatData = { user, guild, member };
                 const welcomeMessage = formatWelcomeMessage(
                     welcomeConfig.welcomeMessage || welcomeConfig.welcomeEmbed?.description || botConfig.welcome?.defaultWelcomeMessage || 'Welcome {user} to {server}!',
                     formatData
                 );
 
-                const messageContent = welcomeConfig.welcomePing ? user.toString() : null;
+                const pingPrefix = welcomeConfig.welcomePing ? `${user} ` : '';
 
-                const embedTitle = formatWelcomeMessage(
-                    welcomeConfig.welcomeEmbed?.title || '🎉 Welcome!',
-                    formatData
-                );
-                const embedFooter = welcomeConfig.welcomeEmbed?.footer
-                    ? formatWelcomeMessage(welcomeConfig.welcomeEmbed.footer, formatData)
-                    : `Welcome to ${guild.name}!`;
-
-                const canEmbed = permissions.has(PermissionFlagsBits.EmbedLinks);
-
-                if (!canEmbed) {
-                    await channel.send({
-                        content: messageContent || welcomeMessage
-                    });
-                } else {
-                    const embed = new EmbedBuilder()
-                        .setColor(welcomeConfig.welcomeEmbed?.color || getColor('success'))
-                        .setTitle(embedTitle)
-                        .setDescription(welcomeMessage)
-                        .setThumbnail(user.displayAvatarURL())
-                        .addFields(
-                            { name: 'User', value: `${user.tag} (${user.id})`, inline: true },
-                            { name: 'Member Count', value: guild.memberCount.toString(), inline: true }
-                        )
-                        .setTimestamp()
-                        .setFooter({ text: embedFooter });
-                    
-                    if (welcomeConfig.welcomeImage) {
-                        embed.setImage(welcomeConfig.welcomeImage);
-                    } else if (welcomeConfig.welcomeEmbed?.image?.url) {
-                        embed.setImage(welcomeConfig.welcomeEmbed.image.url);
-                    }
-                    
-                    await channel.send({ 
-                        content: messageContent,
-                        embeds: [embed] 
-                    });
-                }
+                await channel.send({
+                    content: `${pingPrefix}${welcomeMessage}`
+                });
             }
         }
         
