@@ -181,11 +181,28 @@ async function handleRuleList(interaction) {
     });
 }
 
+function resolveRoleFromInput(guild, input) {
+    const trimmed = input.trim();
+    const mentionMatch = /^<@&(\d+)>$/.exec(trimmed);
+    const roleId = mentionMatch ? mentionMatch[1] : trimmed;
+
+    if (!/^\d{15,25}$/.test(roleId)) return null;
+    return guild.roles.cache.get(roleId) || null;
+}
+
 async function handleIgnoreAdd(interaction) {
     const deferred = await InteractionHelper.safeDefer(interaction);
     if (!deferred) return;
 
-    const role = interaction.options.getRole('role');
+    const role = resolveRoleFromInput(interaction.guild, interaction.options.getString('role'));
+    if (!role) {
+        await replyUserError(interaction, {
+            type: ErrorTypes.VALIDATION,
+            message: 'Could not find that role. Type or paste a real role mention, e.g. `@Staff`.',
+        });
+        return;
+    }
+
     await addIgnoredRole(interaction.guild.id, role.id);
     await InteractionHelper.safeEditReply(interaction, {
         embeds: [successEmbed(`${role} is now ignored by Auto-Moderation and invite tracking.`)],
@@ -196,7 +213,15 @@ async function handleIgnoreRemove(interaction) {
     const deferred = await InteractionHelper.safeDefer(interaction);
     if (!deferred) return;
 
-    const role = interaction.options.getRole('role');
+    const role = resolveRoleFromInput(interaction.guild, interaction.options.getString('role'));
+    if (!role) {
+        await replyUserError(interaction, {
+            type: ErrorTypes.VALIDATION,
+            message: 'Could not find that role. Type or paste a real role mention, e.g. `@Staff`.',
+        });
+        return;
+    }
+
     await removeIgnoredRole(interaction.guild.id, role.id);
     await InteractionHelper.safeEditReply(interaction, {
         embeds: [successEmbed(`${role} is no longer ignored.`)],
