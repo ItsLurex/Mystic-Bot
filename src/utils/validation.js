@@ -143,6 +143,22 @@ export function sanitizeInput(input, maxLength = 2000) {
     .substring(0, maxLength)
     .replace(/[\x00-\x1F\x7F]/g, '');
 }
+/**
+ * Like sanitizeInput, but preserves newlines/carriage returns/tabs instead
+ * of stripping them as control characters. Use this for anything meant to
+ * keep its line breaks (message content sent via /say, /editmessage, etc.) —
+ * sanitizeInput's blanket \x00-\x1F strip silently collapses multi-line text
+ * into one line, since \n (0x0A), \r (0x0D), and \t (0x09) fall in that range.
+ * Still strips genuinely dangerous/invisible control characters.
+ */
+export function sanitizeMultilineInput(input, maxLength = 2000) {
+  if (typeof input !== 'string') return '';
+
+  return input
+    .trim()
+    .substring(0, maxLength)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
 
 export function sanitizeMention(mention) {
   const validId = mention.replace(/[<@!&#]/g, '');
