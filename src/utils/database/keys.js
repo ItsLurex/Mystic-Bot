@@ -156,6 +156,11 @@ export function getIgnoredRolesKey(guildId) {
     return `guild:${guildId}:ignored_roles`;
 }
 
+/** Degraded-mode (in-memory) fallback key for a guild's autorole config. */
+export function getAutoroleConfigKey(guildId) {
+    return `guild:${guildId}:autorole_config`;
+}
+
 /**
  * Legacy key patterns mapped to canonical builders.
  * Used by migration script and read-time fallback.
