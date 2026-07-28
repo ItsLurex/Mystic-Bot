@@ -244,6 +244,15 @@ export const tableStatements = [
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.autorole_config} (
+        guild_id VARCHAR(20) PRIMARY KEY,
+        member_role_id VARCHAR(20),
+        bot_role_id VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
 ];
 export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_guild_users_guild_id ON ${t.guild_users}(guild_id)`,
@@ -314,4 +323,5 @@ export const triggerDefinitions = [
     { name: 'update_automod_channel_rules_updated_at', table: t.automod_channel_rules },
     { name: 'update_autoreact_channel_rules_updated_at', table: t.autoreact_channel_rules },
     { name: 'update_invite_join_records_updated_at', table: t.invite_join_records },
+    { name: 'update_autorole_config_updated_at', table: t.autorole_config },
 ];
