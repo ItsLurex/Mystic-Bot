@@ -1,7 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { logger } from '../../utils/logger.js';
 import { logEvent } from '../../utils/moderation.js';
-import { sanitizeInput } from '../../utils/validation.js';
+import { sanitizeMultilineInput } from '../../utils/validation.js';
 import { getEditableMessage, canEditMessage, deleteEditableMessage } from '../../utils/database/editableMessages.js';
 
 /**
@@ -35,7 +35,7 @@ export default {
         }
 
         const rawContent = interaction.fields.getTextInputValue('content');
-        const newContent = sanitizeInput(rawContent, 2000);
+        const newContent = sanitizeMultilineInput(rawContent, 2000);
 
         if (!newContent) {
             await interaction.reply({
