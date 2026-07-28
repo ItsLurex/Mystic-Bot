@@ -64,18 +64,24 @@ export default {
             group
                 .setName('ignore')
                 .setDescription('Manage roles that bypass Auto-Moderation and invite tracking')
-                .addSubcommand((sub) =>
+               .addSubcommand((sub) =>
                     sub
                         .setName('add')
                         .setDescription('Add a role to the ignored-roles list')
-                        .addRoleOption((option) =>
-                            option.setName('role').setDescription('Role to ignore').setRequired(true)))
+                        .addStringOption((option) =>
+                            option
+                                .setName('role')
+                                .setDescription('Type or paste the role mention, e.g. @Staff (avoids Discord\'s hierarchy-limited role picker)')
+                                .setRequired(true)))
                 .addSubcommand((sub) =>
                     sub
                         .setName('remove')
                         .setDescription('Remove a role from the ignored-roles list')
-                        .addRoleOption((option) =>
-                            option.setName('role').setDescription('Role to stop ignoring').setRequired(true)))
+                        .addStringOption((option) =>
+                            option
+                                .setName('role')
+                                .setDescription('Type or paste the role mention, e.g. @Staff')
+                                .setRequired(true)))
                 .addSubcommand((sub) =>
                     sub
                         .setName('list')
