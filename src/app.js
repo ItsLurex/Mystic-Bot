@@ -17,6 +17,7 @@ import { initializeMusic } from './services/music/riffySetup.js';
 import { shutdownMusic } from './services/music/playerHandler.js';
 import { initializeStickyCache } from './services/stickyService.js';
 import { initAutoModCache } from './services/automodService.js';
+import { initAutoroleCache } from './services/autoroleService.js';
 import pkg from '../package.json' with { type: 'json' };
 import { EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_LABEL } from './config/database/schemaVersion.js';
 
@@ -82,9 +83,13 @@ class TitanBot extends Client {
       const stickyCount = await initializeStickyCache(this);
       startupLog(`Sticky messages cached: ${stickyCount}`);
 
-      startupLog('Loading automod rules into cache...');
+     startupLog('Loading automod rules into cache...');
       const automodCount = await initAutoModCache(this);
       startupLog(`Automod rules cached: ${automodCount}`);
+
+      startupLog('Loading autorole config into cache...');
+      const autoroleCount = await initAutoroleCache();
+      startupLog(`Autorole configs cached: ${autoroleCount}`);
 
       startupLog('Loading commands...');
       await loadCommands(this);
