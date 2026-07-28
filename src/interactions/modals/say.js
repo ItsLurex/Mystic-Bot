@@ -3,7 +3,7 @@ import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { successEmbed } from '../../utils/embeds.js';
-import { sanitizeInput } from '../../utils/validation.js';
+import { sanitizeMultilineInput } from '../../utils/validation.js';
 import { sendSayMessage, popPendingSay, buildEditableNote } from '../../services/sayService.js';
 
 /**
@@ -37,7 +37,7 @@ export default {
         }
 
         const rawMessage = interaction.fields.getTextInputValue('content');
-        const message = sanitizeInput(rawMessage, 2000);
+        const message = sanitizeMultilineInput(rawMessage, 2000);
 
         if (!message) {
             await replyUserError(interaction, {
