@@ -24,9 +24,8 @@ const configuredTables = {
     ignored_roles: 'ignored_roles',
     autoreact_channel_rules: 'autoreact_channel_rules',
     invite_join_records: 'invite_join_records',
-    
+    autorole_config: 'autorole_config',
 };
-
 const allowedTableIdentifiers = new Set([
     'guilds',
     'users',
@@ -50,6 +49,7 @@ const allowedTableIdentifiers = new Set([
     'ignored_roles',
     'autoreact_channel_rules',
     'invite_join_records',
+    'autorole_config',
 ]);
 
 const validatedTables = Object.fromEntries(
