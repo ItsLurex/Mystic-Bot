@@ -20,6 +20,7 @@ import {
 } from '../services/countingGameService.js';
 import { handleMessageForSticky } from '../services/stickyService.js';
 import { handleAutoModMessage } from '../services/automodService.js';
+import { handleAutoReactMessage } from '../services/autoreactService.js';
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
 const MESSAGE_XP_RATE_LIMIT_WINDOW_MS = 10000;
@@ -36,6 +37,7 @@ export default {
       if (wasAutoModerated) return;
 
       await handleMessageForSticky(message, client);
+      await handleAutoReactMessage(message);
       
       const countingProcessed = await handleCountingGame(message, client);
       if (countingProcessed) {
