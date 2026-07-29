@@ -21,7 +21,7 @@ function formatEmojiForDisplay(value) {
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('autoreact')
+        .setName('reactions')
         .setDescription('Configure automatic reactions on every message sent in a channel')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setDMPermission(false)
