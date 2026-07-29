@@ -13,7 +13,7 @@ import {
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('autorole')
+        .setName('joinrole')
         .setDescription('Configure roles automatically given to new members and bots on join')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
         .setDMPermission(false)
