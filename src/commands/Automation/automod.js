@@ -20,7 +20,7 @@ const MAX_PURGE_AMOUNT = 1000;
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('automod')
+        .setName('modrules')
         .setDescription('Configure Auto-Moderation channel rules, ignored roles, and bulk purges')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setDMPermission(false)
