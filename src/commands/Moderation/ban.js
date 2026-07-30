@@ -17,12 +17,32 @@ export default {
         .addStringOption((option) =>
             option.setName("reason").setDescription("Reason for the ban"),
         )
+        .addIntegerOption((option) =>
+            option
+                .setName("delete_days")
+                .setDescription("Days of their messages to delete (0-7, Discord's max)")
+                .setMinValue(0)
+                .setMaxValue(7),
+        )
+        .addStringOption((option) =>
+            option
+                .setName("dm_message")
+                .setDescription("Custom message to DM the user before banning (default message used if left blank)"),
+        )
+        .addBooleanOption((option) =>
+            option
+                .setName("notify")
+                .setDescription("Whether to DM the user at all (default: yes)"),
+        )
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     category: "moderation",
 
     async execute(interaction, config, client) {
         const user = interaction.options.getUser("target");
         const reason = interaction.options.getString("reason") || "No reason provided";
+        const deleteDays = interaction.options.getInteger("delete_days") ?? 0;
+        const dmMessage = interaction.options.getString("dm_message");
+        const notify = interaction.options.getBoolean("notify") ?? true;
 
         if (!user) {
             throw new TitanBotError(
@@ -53,13 +73,22 @@ export default {
             user,
             moderator: interaction.member,
             reason,
+            deleteDays,
+            notify,
+            dmMessage,
         });
+
+        const dmNote = !notify
+            ? '\n**DM:** Skipped (notify:false)'
+            : result.dmSent
+                ? '\n**DM:** Sent'
+                : '\n**DM:** Could not be delivered (DMs closed or bot blocked)';
 
         await InteractionHelper.universalReply(interaction, {
             embeds: [
                 successEmbed(
                     `🚫 **Banned** ${user.tag}`,
-                    `**Reason:** ${reason}\n**Case ID:** #${result.caseId}`,
+                    `**Reason:** ${reason}\n**Case ID:** #${result.caseId}\n**Messages deleted:** last ${result.deleteDays} day${result.deleteDays === 1 ? '' : 's'}${dmNote}`,
                 ),
             ],
         });
