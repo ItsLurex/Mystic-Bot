@@ -25,6 +25,8 @@ const configuredTables = {
     autoreact_channel_rules: 'autoreact_channel_rules',
     invite_join_records: 'invite_join_records',
     autorole_config: 'autorole_config',
+    trap_ban_rules: 'trap_ban_rules',
+    scheduled_unbans: 'scheduled_unbans',
 };
 const allowedTableIdentifiers = new Set([
     'guilds',
@@ -50,6 +52,8 @@ const allowedTableIdentifiers = new Set([
     'autoreact_channel_rules',
     'invite_join_records',
     'autorole_config',
+    'trap_ban_rules',
+    'scheduled_unbans',
 ]);
 
 const validatedTables = Object.fromEntries(
