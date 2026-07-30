@@ -253,6 +253,25 @@ export const tableStatements = [
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.trap_ban_rules} (
+        channel_id VARCHAR(20) PRIMARY KEY,
+        guild_id VARCHAR(20) NOT NULL,
+        ban_duration_days INTEGER NOT NULL DEFAULT 0,
+        dm_message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.scheduled_unbans} (
+        id SERIAL PRIMARY KEY,
+        guild_id VARCHAR(20) NOT NULL,
+        user_id VARCHAR(20) NOT NULL,
+        unban_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
 ];
 export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_guild_users_guild_id ON ${t.guild_users}(guild_id)`,
@@ -285,6 +304,8 @@ ON ${t.editable_messages}(channel_id)`,
     `CREATE INDEX IF NOT EXISTS idx_invite_join_records_guild_id ON ${t.invite_join_records}(guild_id)`,
     `CREATE INDEX IF NOT EXISTS idx_invite_join_records_inviter_id ON ${t.invite_join_records}(guild_id, inviter_id)`,
     `CREATE INDEX IF NOT EXISTS idx_invite_join_records_joined_user_id ON ${t.invite_join_records}(guild_id, joined_user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_trap_ban_rules_guild_id ON ${t.trap_ban_rules}(guild_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_scheduled_unbans_unban_at ON ${t.scheduled_unbans}(unban_at)`,
 ];
 
 export const UPDATE_TIMESTAMP_FUNCTION = `
@@ -324,4 +345,5 @@ export const triggerDefinitions = [
     { name: 'update_autoreact_channel_rules_updated_at', table: t.autoreact_channel_rules },
     { name: 'update_invite_join_records_updated_at', table: t.invite_join_records },
     { name: 'update_autorole_config_updated_at', table: t.autorole_config },
+    { name: 'update_trap_ban_rules_updated_at', table: t.trap_ban_rules },
 ];
