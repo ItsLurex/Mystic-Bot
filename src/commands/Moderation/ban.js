@@ -78,7 +78,6 @@ export default {
             dmMessage,
         });
 
-        const dmNote = !notify
             ? '\n**DM:** Skipped (notify:false)'
             : result.dmSent
                 ? '\n**DM:** Sent'
