@@ -137,7 +137,9 @@ export class ModerationService {
     user,
     moderator,
     reason = 'No reason provided',
-    deleteDays = 0
+    deleteDays = 0,
+    notify = true,
+    dmMessage = null
   }) {
     try {
       if (!guild || !user || !moderator) {
@@ -174,7 +176,27 @@ export class ModerationService {
         }
       }
 
-      await guild.members.ban(user.id, { reason });
+      // DM before banning, not after — once banned, Discord can no longer
+      // guarantee a DM channel exists (no shared server), so this is the
+      // only reliable window to reach them. Never let a failed/blocked DM
+      // (DMs disabled, bot blocked, etc.) stop the ban itself.
+      let dmSent = false;
+      if (notify) {
+        const content = dmMessage
+          ? dmMessage
+          : `You have been banned from **${guild.name}**.\n**Reason:** ${reason}`;
+        try {
+          await user.send({ content });
+          dmSent = true;
+        } catch (error) {
+          logger.debug(`Could not DM ${user.tag} before ban: ${error.message}`);
+        }
+      }
+
+      const clampedDeleteDays = Math.min(Math.max(Number(deleteDays) || 0, 0), 7);
+      const deleteMessageSeconds = clampedDeleteDays * 24 * 60 * 60;
+
+      await guild.members.ban(user.id, { reason, deleteMessageSeconds });
 
       const caseId = await logModerationAction({
         client: guild.client,
@@ -188,7 +210,8 @@ export class ModerationService {
             userId: user.id,
             moderatorId: moderator.id,
             permanent: true,
-            deleteDays
+            deleteDays: clampedDeleteDays,
+            notified: dmSent
           }
         }
       });
@@ -198,7 +221,9 @@ export class ModerationService {
       return {
         caseId,
         user: user.tag,
-        reason
+        reason,
+        deleteDays: clampedDeleteDays,
+        dmSent
       };
     } catch (error) {
       logger.error('Error banning user:', error);
