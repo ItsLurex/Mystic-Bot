@@ -306,7 +306,8 @@ ON ${t.editable_messages}(channel_id)`,
     `CREATE INDEX IF NOT EXISTS idx_invite_join_records_joined_user_id ON ${t.invite_join_records}(guild_id, joined_user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_trap_ban_rules_guild_id ON ${t.trap_ban_rules}(guild_id)`,
     `CREATE INDEX IF NOT EXISTS idx_scheduled_unbans_unban_at ON ${t.scheduled_unbans}(unban_at)`,
-];
+
+    ];
 
 export const UPDATE_TIMESTAMP_FUNCTION = `
     CREATE OR REPLACE FUNCTION update_updated_at_column()
