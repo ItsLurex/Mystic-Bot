@@ -153,7 +153,7 @@ export async function handleAutoModMessage(message, client) {
 
 /**
  * Bulk-deletes up to `amount` recent messages in a channel (the manual
- * /automod purge command). Discord's bulkDelete caps at 100 per call and
+ * /modrules purge command). Discord's bulkDelete caps at 100 per call and
  * refuses messages older than 14 days — both are handled transparently.
  * Returns the total number of messages actually deleted.
  */
@@ -174,4 +174,77 @@ export async function purgeChannelMessages(channel, amount) {
     }
 
     return totalDeleted;
+}
+
+/** Safety ceiling so a runaway/misfired deep purge can't loop forever. */
+const DEEP_PURGE_HARD_CAP = 50000;
+/** Small pause between individual deletes once past the 14-day bulk window, to stay well under rate limits. */
+const DEEP_PURGE_DELETE_DELAY_MS = 350;
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Deletes an entire channel's history (or up to `amount` if given), reaching
+ * past Discord's 14-day bulkDelete limit by falling back to deleting
+ * messages one at a time once that window is exhausted. This is genuinely
+ * slow for old, busy channels — expect roughly 2-3 messages per second once
+ * it's past the fast bulk-delete phase. Meant to be run in the background
+ * (not awaited by an interaction handler), with `onProgress(deletedSoFar)`
+ * called periodically so the caller can report status without polling.
+ *
+ * @returns {Promise<{ total: number, hitCap: boolean }>}
+ */
+export async function deepPurgeChannelMessages(channel, amount, onProgress) {
+    const cap = amount && amount > 0 ? Math.min(amount, DEEP_PURGE_HARD_CAP) : DEEP_PURGE_HARD_CAP;
+    let totalDeleted = 0;
+
+    // Phase 1: fast bulk-delete for anything within Discord's 14-day window.
+    while (totalDeleted < cap) {
+        const batchSize = Math.min(cap - totalDeleted, 100);
+        let deleted;
+        try {
+            deleted = await channel.bulkDelete(batchSize, true);
+        } catch (error) {
+            logger.error(`[AutoMod] Deep purge bulk phase failed in channel ${channel.id}:`, error);
+            break;
+        }
+        totalDeleted += deleted.size;
+        if (onProgress) onProgress(totalDeleted);
+        if (deleted.size < batchSize) break; // nothing left in the fast window
+    }
+
+    // Phase 2: slow, one-by-one deletes for anything older than 14 days.
+    let beforeId;
+    while (totalDeleted < cap) {
+        let batch;
+        try {
+            batch = await channel.messages.fetch({ limit: 100, before: beforeId });
+        } catch (error) {
+            logger.error(`[AutoMod] Deep purge fetch phase failed in channel ${channel.id}:`, error);
+            break;
+        }
+
+        if (batch.size === 0) break;
+
+        for (const message of batch.values()) {
+            if (totalDeleted >= cap) break;
+            try {
+                await message.delete();
+                totalDeleted += 1;
+                if (onProgress && totalDeleted % 50 === 0) onProgress(totalDeleted);
+            } catch (error) {
+                logger.debug(`[AutoMod] Deep purge could not delete message ${message.id}: ${error.message}`);
+            }
+            await sleep(DEEP_PURGE_DELETE_DELAY_MS);
+        }
+
+        beforeId = batch.last()?.id;
+        if (!beforeId) break;
+    }
+
+    if (onProgress) onProgress(totalDeleted);
+
+    return { total: totalDeleted, hitCap: totalDeleted >= cap };
 }
