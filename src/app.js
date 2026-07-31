@@ -18,6 +18,7 @@ import { shutdownMusic } from './services/music/playerHandler.js';
 import { initializeStickyCache } from './services/stickyService.js';
 import { initAutoModCache } from './services/automodService.js';
 import { initAutoReactCache } from './services/autoreactService.js';
+import { initTrapBanCache, checkExpiredTrapBans } from './services/trapBanService.js';
 import { initAutoroleCache } from './services/autoroleService.js';
 import pkg from '../package.json' with { type: 'json' };
 import { EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_LABEL } from './config/database/schemaVersion.js';
@@ -91,6 +92,10 @@ class TitanBot extends Client {
       startupLog('Loading autoreact rules into cache...');
       const autoreactCount = await initAutoReactCache();
       startupLog(`Autoreact rules cached: ${autoreactCount}`);
+
+      startupLog('Loading auto-ban trap rules into cache...');
+      const autobanCount = await initTrapBanCache();
+      startupLog(`Auto-ban trap rules cached: ${autobanCount}`);
 
       startupLog('Loading autorole config into cache...');
       const autoroleCount = await initAutoroleCache();
@@ -271,6 +276,7 @@ class TitanBot extends Client {
     cron.schedule('0 6 * * *', runSafeTask('birthday_check', () => checkBirthdays(this)));
     cron.schedule('* * * * *', runSafeTask('giveaway_check', () => checkGiveaways(this)));
     cron.schedule('*/15 * * * *', runSafeTask('counter_update', () => this.updateAllCounters()));
+    cron.schedule('*/5 * * * *', runSafeTask('autoban_unban_check', () => checkExpiredTrapBans(this)));
   }
 
   async updateAllCounters() {
