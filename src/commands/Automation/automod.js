@@ -11,6 +11,7 @@ import {
     removeRule,
     listRules,
     purgeChannelMessages,
+    deepPurgeChannelMessages,
 } from '../../services/automodService.js';
 import { getIgnoredRoleIds, addIgnoredRole, removeIgnoredRole } from '../../services/ignoredRolesService.js';
 import { resolveRoleFromInput } from '../../utils/discordInputParsing.js';
@@ -90,20 +91,23 @@ export default {
         .addSubcommand((sub) =>
             sub
                 .setName('purge')
-                .setDescription('Bulk-delete recent messages in a channel')
+                .setDescription('Bulk-delete messages in a channel')
                 .addIntegerOption((option) =>
                     option
                         .setName('amount')
-                        .setDescription('How many messages to delete (max 1000, cannot be older than 14 days)')
-                        .setRequired(true)
+                        .setDescription('How many messages to delete (default: 100 normal / entire channel if deep)')
                         .setMinValue(1)
-                        .setMaxValue(MAX_PURGE_AMOUNT))
+                        .setMaxValue(50000))
                 .addChannelOption((option) =>
                     option
                         .setName('channel')
                         .setDescription('Channel to purge (defaults to the current channel)')
                         .addChannelTypes(...TEXT_CHANNEL_TYPES)
-                        .setRequired(false))),
+                        .setRequired(false))
+                .addBooleanOption((option) =>
+                    option
+                        .setName('deep')
+                        .setDescription('Also delete messages older than 14 days (slow — runs in the background, DMs you when done)'))),
 
     async execute(interaction) {
         const group = interaction.options.getSubcommandGroup(false);
@@ -239,14 +243,14 @@ async function handleIgnoreList(interaction) {
 }
 
 async function handlePurge(interaction) {
-    const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
-    if (!deferred) return;
-
-    const amount = interaction.options.getInteger('amount');
+    const deep = interaction.options.getBoolean('deep') ?? false;
+    const rawAmount = interaction.options.getInteger('amount');
     const channel = interaction.options.getChannel('channel') || interaction.channel;
 
     const botPermissions = channel.permissionsFor(interaction.guild.members.me);
     if (!botPermissions?.has(PermissionFlagsBits.ManageMessages)) {
+        const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
+        if (!deferred) return;
         await replyUserError(interaction, {
             type: ErrorTypes.PERMISSION,
             message: `I need **Manage Messages** permission in ${channel} to purge messages.`,
@@ -254,18 +258,59 @@ async function handlePurge(interaction) {
         return;
     }
 
-    try {
-        const deletedCount = await purgeChannelMessages(channel, amount);
-        await InteractionHelper.safeEditReply(interaction, {
-            embeds: [successEmbed(
-                `Deleted **${deletedCount}** message${deletedCount === 1 ? '' : 's'} in ${channel}.` +
-                (deletedCount < amount
-                    ? '\n\nNote: Discord cannot bulk-delete messages older than 14 days, so fewer than requested may have been removed.'
-                    : ''),
-            )],
-        });
-    } catch (error) {
-        logger.error(`[AutoMod] Error purging channel ${channel.id}:`, error);
-        throw error;
+    if (!deep) {
+        const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
+        if (!deferred) return;
+
+        const amount = rawAmount ?? 100;
+        try {
+            const deletedCount = await purgeChannelMessages(channel, amount);
+            await InteractionHelper.safeEditReply(interaction, {
+                embeds: [successEmbed(
+                    `Deleted **${deletedCount}** message${deletedCount === 1 ? '' : 's'} in ${channel}.` +
+                    (deletedCount < amount
+                        ? '\n\nNote: Discord cannot bulk-delete messages older than 14 days — use `deep:true` to also remove older messages (slower, runs in the background).'
+                        : ''),
+                )],
+            });
+        } catch (error) {
+            logger.error(`[AutoMod] Error purging channel ${channel.id}:`, error);
+            throw error;
+        }
+        return;
     }
+
+    // Deep mode: this can take a long time on old, busy channels — far
+    // longer than a Discord interaction token stays valid for edits (15
+    // minutes). So we reply immediately, run the purge in the background,
+    // and DM the moderator a summary when it's done instead of trying to
+    // keep editing the original reply.
+    const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
+    if (!deferred) return;
+
+    await InteractionHelper.safeEditReply(interaction, {
+        embeds: [successEmbed(
+            `🐢 Deep purge started in ${channel}${rawAmount ? ` (up to ${rawAmount} messages)` : ' (entire channel history)'}.\n\n` +
+            `This runs in the background and can take a while for old, busy channels. I'll DM you a summary when it's finished.`,
+        )],
+    });
+
+    const moderator = interaction.user;
+    let lastReported = 0;
+
+    deepPurgeChannelMessages(channel, rawAmount, (deletedSoFar) => {
+        // Only worth a heads-up DM every 500 messages for very large jobs — avoid spamming for small ones.
+        if (deletedSoFar - lastReported >= 500) {
+            lastReported = deletedSoFar;
+            moderator.send(`⏳ Deep purge of ${channel} is still running — ${deletedSoFar} messages deleted so far.`).catch(() => {});
+        }
+    })
+        .then(({ total, hitCap }) => {
+            const capNote = hitCap ? '\n\n(Stopped at the requested/safety limit — there may still be more messages left.)' : '\n\nThe channel has been fully cleared (or has no more messages left to delete).';
+            moderator.send(`✅ Deep purge of ${channel} finished — **${total}** message${total === 1 ? '' : 's'} deleted.${capNote}`).catch(() => {});
+        })
+        .catch((error) => {
+            logger.error(`[AutoMod] Deep purge failed for channel ${channel.id}:`, error);
+            moderator.send(`❌ Deep purge of ${channel} hit an error and stopped early. Check the bot logs for details.`).catch(() => {});
+        });
 }
