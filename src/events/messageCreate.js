@@ -20,6 +20,7 @@ import {
 } from '../services/countingGameService.js';
 import { handleMessageForSticky } from '../services/stickyService.js';
 import { handleAutoModMessage } from '../services/automodService.js';
+import { handleTrapBanMessage } from '../services/trapBanService.js';
 import { handleAutoReactMessage } from '../services/autoreactService.js';
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
@@ -33,7 +34,10 @@ export default {
 
       logger.debug(`Message received from ${message.author.tag}: ${message.content}`);
 
-     const wasAutoModerated = await handleAutoModMessage(message, client);
+     const wasTrapBanned = await handleTrapBanMessage(message, client);
+      if (wasTrapBanned) return;
+
+      const wasAutoModerated = await handleAutoModMessage(message, client);
       if (wasAutoModerated) return;
 
       await handleMessageForSticky(message, client);
