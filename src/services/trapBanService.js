@@ -80,7 +80,7 @@ export async function handleTrapBanMessage(message, client) {
         const result = await ModerationService.banUser({
             guild: message.guild,
             user: message.author,
-            moderator: client.user,
+            moderator: message.guild.members.me,
             reason: `Auto-ban: posted in trap channel #${message.channel.name}`,
             deleteDays: 1,
             notify: true,
