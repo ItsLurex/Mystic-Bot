@@ -40,7 +40,11 @@ export async function scanServerHealth(guild) {
 
     const adminRoles = guild.roles.cache.filter((r) => !r.managed && r.id !== guild.id && r.permissions.has(PermissionFlagsBits.Administrator));
     for (const role of adminRoles.values()) {
-        issues.critical.push(`**${role.name}** grants full Administrator to ${role.members.size} member(s) — bypasses every permission check. Only trusted owners should hold Administrator.`);
+        if (role.members.size === 0) {
+            issues.info.push(`**${role.name}** has Administrator but 0 members hold it — not an active risk, but consider deleting it if unused.`);
+        } else {
+            issues.warning.push(`**${role.name}** grants full Administrator to ${role.members.size} member(s). Common for trusted staff/owners — just worth knowing that a compromised account with this role has full control.`);
+        }
     }
 
     if (botMember.permissions.has(PermissionFlagsBits.Administrator)) {
@@ -101,7 +105,7 @@ export async function scanServerHealth(guild) {
 
     const moderationFlags = PermissionFlagsBits.BanMembers | PermissionFlagsBits.KickMembers | PermissionFlagsBits.ManageRoles | PermissionFlagsBits.ManageGuild;
     const riskyHierarchyRoles = guild.roles.cache.filter((r) =>
-        !r.managed && r.id !== guild.id && (r.permissions.bitfield & moderationFlags) !== 0n && r.position > botMember.roles.highest.position,
+        !r.managed && r.id !== guild.id && r.members.size > 0 && (r.permissions.bitfield & moderationFlags) !== 0n && r.position > botMember.roles.highest.position,
     );
     for (const role of riskyHierarchyRoles.values()) {
         issues.warning.push(`**${role.name} sits above my highest role but has moderation permissions.** I can't moderate members with this role. Move my role above it.`);
