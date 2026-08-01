@@ -233,13 +233,11 @@ export default {
             : null;
         if (existingPingMsg) {
             await existingPingMsg.edit({
-                content: `🔄 **REROLL WINNERS** 🔄 CONGRATULATIONS ${winnerMentions}! You are the new winner(s) for the **${giveaway.prize}** giveaway 
-                Please open a ticket to claim your prize.`,
+                content: `🔄 **REROLL WINNERS** 🔄 `🎉 Congratulations ${winnerMentions}! You won the **${giveaway.prize || 'giveaway'}**. Make a ticket to claim in 24 hours`;
             });
         } else {
             const newPingMsg = await channel.send({
-                content: `🔄 **REROLL WINNERS** 🔄 CONGRATULATIONS ${winnerMentions}! You are the new winner(s) for the **${giveaway.prize}** giveaway 
-                Please open a ticket to claim your prize.`,
+                content: `🔄 **REROLL WINNERS** 🔄 `🎉 Congratulations ${winnerMentions}! You won the **${giveaway.prize || 'giveaway'}**. Make a ticket to claim in 24 hours`;
             });
             updatedGiveaway.winnerPingMessageId = newPingMsg.id;
         }
