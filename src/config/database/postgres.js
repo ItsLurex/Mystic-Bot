@@ -57,6 +57,7 @@ const allowedTableIdentifiers = new Set([
     'trap_ban_rules',
     'scheduled_unbans',
     'reaction_role_messages',
+    'reaction_role_messages',
 ]);
 
 const validatedTables = Object.fromEntries(
