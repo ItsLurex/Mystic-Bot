@@ -19,6 +19,7 @@ import { initializeStickyCache } from './services/stickyService.js';
 import { initAutoModCache } from './services/automodService.js';
 import { initAutoReactCache } from './services/autoreactService.js';
 import { initTrapBanCache, checkExpiredTrapBans } from './services/trapBanService.js';
+import { initReactionRolePanelCache } from './services/reactionRolePanelService.js';
 import { initAutoroleCache } from './services/autoroleService.js';
 import pkg from '../package.json' with { type: 'json' };
 import { EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_LABEL } from './config/database/schemaVersion.js';
@@ -100,6 +101,10 @@ class TitanBot extends Client {
       startupLog('Loading autorole config into cache...');
       const autoroleCount = await initAutoroleCache();
       startupLog(`Autorole configs cached: ${autoroleCount}`);
+
+      startupLog('Loading reaction role panels into cache...');
+      const rrCount = await initReactionRolePanelCache();
+      startupLog(`Reaction role panels cached: ${rrCount}`);
 
       startupLog('Loading commands...');
       await loadCommands(this);
