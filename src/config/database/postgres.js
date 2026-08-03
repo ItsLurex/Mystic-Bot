@@ -28,7 +28,6 @@ const configuredTables = {
     trap_ban_rules: 'trap_ban_rules',
     scheduled_unbans: 'scheduled_unbans',
     reaction_role_messages: 'reaction_role_messages',
-    approved_admin_roles: 'approved_admin_roles',
 };
 const allowedTableIdentifiers = new Set([
     'guilds',
@@ -56,7 +55,6 @@ const allowedTableIdentifiers = new Set([
     'autorole_config',
     'trap_ban_rules',
     'scheduled_unbans',
-    'reaction_role_messages',
     'reaction_role_messages',
 ]);
 
