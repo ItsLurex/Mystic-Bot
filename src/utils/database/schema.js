@@ -282,6 +282,14 @@ export const tableStatements = [
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.approved_admin_roles} (
+        guild_id VARCHAR(20) NOT NULL,
+        role_id VARCHAR(20) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (guild_id, role_id),
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
 ];
 export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_guild_users_guild_id ON ${t.guild_users}(guild_id)`,
