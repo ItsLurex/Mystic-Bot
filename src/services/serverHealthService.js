@@ -22,10 +22,11 @@ function snowflakeToDate(id) {
     return new Date(Number((BigInt(id) >> 22n) + 1420070400000n));
 }
 
-export async function scanServerHealth(guild) {
+export async function scanServerHealth(guild, approvedRoleIds = []) {
     const issues = { critical: [], warning: [], info: [] };
     const everyone = guild.roles.everyone;
     const botMember = guild.members.me;
+    const approvedSet = new Set(approvedRoleIds);
 
     for (const [label, flag] of DANGEROUS_EVERYONE_CRITICAL) {
         if (everyone.permissions.has(flag)) {
@@ -40,6 +41,7 @@ export async function scanServerHealth(guild) {
 
     const adminRoles = guild.roles.cache.filter((r) => !r.managed && r.id !== guild.id && r.permissions.has(PermissionFlagsBits.Administrator));
     for (const role of adminRoles.values()) {
+        if (approvedSet.has(role.id)) continue;
         if (role.members.size === 0) {
             issues.info.push(`**${role.name}** has Administrator but 0 members hold it — not an active risk, but consider deleting it if unused.`);
         } else {
