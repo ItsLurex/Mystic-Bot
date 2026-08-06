@@ -282,7 +282,7 @@ export const tableStatements = [
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
     )`,
-    
+
     `CREATE TABLE IF NOT EXISTS ${t.approved_admin_roles} (
         guild_id VARCHAR(20) NOT NULL,
         role_id VARCHAR(20) NOT NULL,

@@ -4,27 +4,13 @@
  */
 
 export const commandAliases = {
-    'bal': 'balance',
-    'money': 'balance',
-    'cash': 'balance',
-
-    'dep': 'deposit',
-    'with': 'withdraw',
-    'work': 'work',
-    'daily': 'daily',
-    'gamble': 'gamble',
-    'bet': 'gamble',
-    'rob': 'rob',
-    'crime': 'crime',
-    'pay': 'pay',
-    'give': 'pay',
-    'send': 'pay',
-
+    // Core
     'ping': 'ping',
     'help': 'help',
     'h': 'help',
     'info': 'help',
 
+    // Moderation
     'ban': 'ban',
     'kick': 'kick',
     'mute': 'timeout',
@@ -34,6 +20,7 @@ export const commandAliases = {
     'untimeout': 'untimeout',
     'unmute': 'untimeout',
 
+    // Leveling
     'rank': 'rank',
     'lvl': 'rank',
     'xp': 'rank',
@@ -41,27 +28,16 @@ export const commandAliases = {
     'lb': 'leaderboard',
     'top': 'leaderboard',
 
-    'shop': 'shop',
-    'buy': 'buy',
-    'inventory': 'inventory',
-    'inv': 'inventory',
-    'items': 'inventory',
-
+    // Utility
     'user': 'userinfo',
+    'userinfo': 'userinfo',
+    'whois': 'userinfo',
+    'ui': 'userinfo',
     'avatar': 'avatar',
     'pfp': 'avatar',
     'icon': 'avatar',
 
-    'bd': 'birthday',
-    'bday': 'birthday',
-    'b': 'birthday',
-
-    'flip': 'flip',
-    'coin': 'flip',
-    'roll': 'roll',
-    'dice': 'roll',
-    'fight': 'fight',
-
+    // Giveaways
     'gcreate': 'gcreate',
     'gstart': 'gcreate',
     'gend': 'gend',
@@ -70,40 +46,17 @@ export const commandAliases = {
     'greroll': 'greroll',
     'groll': 'greroll',
 
-    'ticket': 'ticket',
-    't': 'ticket',
-    'new': 'ticket',
-
-    'ver': 'verify',
-    'vadmin': 'verification',
-    'av': 'autoverify',
-
+    // Welcome
     'welcome': 'welcome',
     'greet': 'greet',
-    'goodbye': 'goodbye',
-    'autorole': 'autorole',
 
-    'calc': 'calculate',
-    'math': 'calculate',
-    'weather': 'weather',
-    'todo': 'todo',
+    // Utility
     'report': 'report',
-    'userinfo': 'userinfo',
-    'whois': 'userinfo',
-    'ui': 'userinfo',
 
+    // Server stats
     'serverstats': 'serverstats',
     'ss': 'serverstats',
     'sstats': 'serverstats',
-
-    'rr': 'reactroles',
-    'reactionroles': 'reactroles',
-
-    'jtc': 'jointocreate',
-    'jointocreate': 'jointocreate',
-
-    'np': 'nowplaying',
-    'now': 'nowplaying',
 };
 
 export const subcommandAliases = {

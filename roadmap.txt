@@ -1,4 +1,4 @@
-TitanBot Roadmap / Structure Overview
+Mystic-Bot Roadmap / Structure Overview
 
 Goal
 - Keep this as a practical map of the codebase.
@@ -7,53 +7,58 @@ Goal
 Root
 - index.js                    -> process entry point
 - package.json                -> scripts, dependencies, project metadata
-- README.md                   -> setup and usage docs
-- SECURITY.md                 -> security policy
+- Dockerfile                  -> container image for the bot
+- docker-compose.yml          -> bot + PostgreSQL (+ optional Lavalink) stack
 - scripts/                    -> utility/maintenance scripts (backup, restore, migrate)
-- logs/                       -> runtime log output
+- lavalink/                   -> Lavalink node config used by the music system
+- database/migrations/        -> reference SQL for schema changes (schema.js is the source of truth)
 - src/                        -> main bot application code
-- tests/                      -> unit tests (run via npm test)
 
 src/
 - app.js                      -> creates client, initializes systems, starts web server
 
 - commands/                   -> slash command categories by feature
-  - Core/                     -> help, ping, stats, uptime, invite
-  - Community/                -> application management + dashboards
+  - Core/                     -> help, ping, stats, uptime, support, commands, configwizard
+  - Automation/               -> autoban, automod, autoreact, autorole, reactionrole
+  - Community/                -> apply, app-admin (application management + dashboards)
+  - Diagnostics/              -> serverhealth
+  - Fun/                      -> count (counting game)
+  - Giveaway/                 -> gcreate, gdelete, gend, greroll
+  - Leveling/                 -> leveling system (rank, leaderboard, level management)
   - Logging/                  -> audit logging + event management
-    - modules/logging_dashboard.js
-    - modules/logging_setchannel.js
-  - Ticket/                   -> support ticket system + dashboard
-  - ServerStats/              -> server stats channel system
-  - Economy/                  -> economy system
   - Moderation/               -> moderation/admin commands
-  - Verification/             -> member verification flow
-  - JoinToCreate/             -> dynamic voice channel creation
-  - Reaction_roles/           -> automatic role assignment
-  - Birthday/, Fun/, Giveaway/, Leveling/, Search/, Tools/, Utility/, Welcome/
+  - ServerStats/              -> server stats voice channel system
+  - Sticky/                   -> sticky messages (set, edit, remove, list, pause, resume)
+  - Tools/                    -> countdown, embedbuilder, poll, randomuser, time
+  - Utility/                  -> avatar, userinfo, serverinfo, report
+  - Welcome/                  -> welcome/goodbye message system
 
 - config/                     -> centralized configuration modules
+  - bot.js                    -> single source of truth for embed theming/colors and core bot config
+  - commands/                 -> aliases, category icons, prefix restrictions
+  - database/postgres.js      -> PostgreSQL pool config + table allowlist
+  - music/lavalink.js         -> Lavalink node configuration
 - events/                     -> Discord event listeners
 - handlers/                   -> interaction routing and component handlers
-  - commandLoader.js          -> loads slash commands at startup
-  - events.js                 -> Discord event listener registration
-  - interactions.js           -> button/select/modal router
-  - ticketButtons.js, reactionRoles.js, etc.
-
+  - loaders/                  -> command/event/interaction registration at startup
 - interactions/               -> button, modal, and select menu handlers
 - services/                   -> business logic + data operations
 - utils/                      -> shared helpers
   - database.js               -> facade re-exporting database modules
   - database/wrapper.js       -> DatabaseWrapper, get/set helpers
-  - database/keys.js          -> Redis-style key builders
-  - database/tickets.js       -> ticket persistence + guild ticket stats
-  - panelStatus.js            -> shared panel message detection
-  - errorHandler.js, logger.js, embeds.js, etc.
+  - database/keys.js          -> key builders
+  - database/schema.js        -> single source of truth for table DDL (auto-create + migrations)
+  - errorHandler.js           -> typed error handling, error registry, background task safety
+  - logger.js                 -> structured logging
 
 Database
 - PostgreSQL (primary) with in-memory fallback for development
 - Graceful degradation when PostgreSQL is unavailable
+- schema.js is the source of truth; the bot auto-creates missing tables on connect
+  and `npm run migrate` applies them explicitly
 
 Notes
 - Modular by feature area: commands -> handlers -> services -> utils
 - bot.js is the single source of truth for embed theming/colors and core bot config
+- Feature toggles live in src/config/bot.js (features section)
+- Slash commands register globally at startup using CLIENT_ID
