@@ -8,6 +8,7 @@ import { getServerCounters, updateCounter } from '../services/serverstatsService
 import { setBirthday as dbSetBirthday } from '../utils/database.js';
 import { logger } from '../utils/logger.js';
 import { applyAutoRole } from '../services/autoroleService.js';
+import { handleMemberJoin as handleAltDetectJoin } from '../services/altDetectService.js';
 
 export default {
   name: Events.GuildMemberAdd,
@@ -16,6 +17,13 @@ export default {
   async execute(member) {
     try {
         const { guild, user } = member;
+
+        // Alt Detector runs first: if the joiner's account is under the
+        // configured age and gets kicked/banned, none of the rest of the
+        // join pipeline (welcome, auto-role, counters...) should run.
+        if (await handleAltDetectJoin(member)) {
+            return;
+        }
 
         await applyAutoRole(member);
 

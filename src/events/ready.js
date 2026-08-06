@@ -6,6 +6,7 @@ import { reconcileTicketPanels, reconcileVerificationPanels, reconcileReactionRo
 import { reconcileLevelRoles } from "../services/leveling/levelRoleSyncService.js";
 import { initRiffyAfterReady } from "../services/music/riffySetup.js";
 import { initIgnoredRolesCache } from "../services/ignoredRolesService.js";
+import { initAltDetectCache } from "../services/altDetectService.js";
 
 export default {
   name: Events.ClientReady,
@@ -20,6 +21,7 @@ export default {
       startupLog(`Loaded ${client.commands.size} commands`);
 
       await initIgnoredRolesCache(client);
+      await initAltDetectCache();
 
       if (client.config?.features?.music) {
         initRiffyAfterReady(client);
