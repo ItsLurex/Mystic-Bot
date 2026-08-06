@@ -1190,7 +1190,3 @@ formatted = formatted.substring(0, 100);
     
     return formatted || 'Voice Channel';
 }
-
-function generateCaseId() {
-    return `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 4)}`;
-}
