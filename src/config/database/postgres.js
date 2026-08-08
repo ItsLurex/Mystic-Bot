@@ -29,6 +29,8 @@ const configuredTables = {
     scheduled_unbans: 'scheduled_unbans',
     reaction_role_messages: 'reaction_role_messages',
     approved_admin_roles: 'approved_admin_roles',
+    alt_detect_config: 'alt_detect_config',
+    alt_detect_flags: 'alt_detect_flags',
 };
 const allowedTableIdentifiers = new Set([
     'guilds',
@@ -58,6 +60,8 @@ const allowedTableIdentifiers = new Set([
     'scheduled_unbans',
     'reaction_role_messages',
     'approved_admin_roles',
+    'alt_detect_config',
+    'alt_detect_flags',
 ]);
 
 const validatedTables = Object.fromEntries(

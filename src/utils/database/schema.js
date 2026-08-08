@@ -290,6 +290,36 @@ export const tableStatements = [
         PRIMARY KEY (guild_id, role_id),
         FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.alt_detect_config} (
+        guild_id VARCHAR(20) PRIMARY KEY,
+        enabled BOOLEAN NOT NULL DEFAULT FALSE,
+        min_account_age_days INTEGER NOT NULL DEFAULT 7,
+        action VARCHAR(10) NOT NULL DEFAULT 'alert',
+        alert_channel_id VARCHAR(20),
+        dm_user BOOLEAN NOT NULL DEFAULT TRUE,
+        exempt_role_ids JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.alt_detect_flags} (
+        guild_id VARCHAR(20) NOT NULL,
+        user_id VARCHAR(20) NOT NULL,
+        user_tag VARCHAR(120),
+        account_created_at TIMESTAMP,
+        account_age_days INTEGER,
+        source VARCHAR(10) NOT NULL DEFAULT 'join',
+        status VARCHAR(12) NOT NULL DEFAULT 'flagged',
+        notes TEXT,
+        flagged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        resolved_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (guild_id, user_id),
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
 ];
 export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_guild_users_guild_id ON ${t.guild_users}(guild_id)`,
@@ -324,6 +354,8 @@ ON ${t.editable_messages}(channel_id)`,
     `CREATE INDEX IF NOT EXISTS idx_invite_join_records_joined_user_id ON ${t.invite_join_records}(guild_id, joined_user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_trap_ban_rules_guild_id ON ${t.trap_ban_rules}(guild_id)`,
     `CREATE INDEX IF NOT EXISTS idx_scheduled_unbans_unban_at ON ${t.scheduled_unbans}(unban_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_alt_detect_flags_guild_id ON ${t.alt_detect_flags}(guild_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_alt_detect_flags_status ON ${t.alt_detect_flags}(guild_id, status)`,
 
     ];
 
@@ -365,4 +397,6 @@ export const triggerDefinitions = [
     { name: 'update_invite_join_records_updated_at', table: t.invite_join_records },
     { name: 'update_autorole_config_updated_at', table: t.autorole_config },
     { name: 'update_trap_ban_rules_updated_at', table: t.trap_ban_rules },
+    { name: 'update_alt_detect_config_updated_at', table: t.alt_detect_config },
+    { name: 'update_alt_detect_flags_updated_at', table: t.alt_detect_flags },
 ];
