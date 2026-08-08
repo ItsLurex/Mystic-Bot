@@ -22,20 +22,25 @@ const BUG_REPORT_BUTTON_ID = "help-bug-report";
 const HELP_MENU_TIMEOUT_MS = 5 * 60 * 1000;
 
 const CATEGORY_ICONS = {
+    Automation: "⚙️",
+    Community: "👥",
     Core: "ℹ️",
-    Moderation: "🛡️",
+    Diagnostics: "🩺",
     Fun: "🎮",
+    Giveaway: "🎉",
     Leveling: "📊",
+    Logging: "📝",
+    Moderation: "🛡️",
+    ServerStats: "📈",
+    Sticky: "📌",
+    Tools: "🛠️",
     Utility: "🔧",
     Welcome: "👋",
-    Giveaway: "🎉",
-    Tools: "🛠️",
-    Community: "👥",
 };
 
 function formatCategoryName(rawCategory) {
-    return rawCategory
-        .replace(/_/g, '')
+    return String(rawCategory || '')
+        .replace(/_/g, ' ')
         .replace(/([a-z])([A-Z])/g, '$1 $2')
         .replace(/\b\w/g, (char) => char.toUpperCase());
 }

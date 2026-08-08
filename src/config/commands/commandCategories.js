@@ -3,8 +3,10 @@
  */
 
 export const CATEGORY_ICONS = {
+  Automation: '⚙️',
   Community: '👥',
   Core: 'ℹ️',
+  Diagnostics: '🩺',
   Fun: '🎮',
   Giveaway: '🎉',
   Leveling: '📊',
