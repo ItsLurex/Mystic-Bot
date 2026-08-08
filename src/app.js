@@ -21,8 +21,10 @@ import { initAutoReactCache } from './services/autoreactService.js';
 import { initTrapBanCache, checkExpiredTrapBans } from './services/trapBanService.js';
 import { initReactionRolePanelCache } from './services/reactionRolePanelService.js';
 import { initAutoroleCache } from './services/autoroleService.js';
+import { cleanupExpiredSessions } from './utils/database/webSessions.js';
 import pkg from '../package.json' with { type: 'json' };
 import { EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_LABEL } from './config/database/schemaVersion.js';
+import { setupWebRoutes } from './services/web/routes.js';
 
 class TitanBot extends Client {
   constructor() {
@@ -232,7 +234,15 @@ class TitanBot extends Client {
       });
     });
 
-    app.get('/', (req, res) => {
+    // Mount dashboard web routes (auth + dashboard + logs API)
+    try {
+        setupWebRoutes(app, this);
+    } catch (error) {
+        logger.error('Failed to setup web dashboard routes:', error);
+    }
+
+    // Keep API root for backwards compatibility, but main / is now handled by dashboard routes
+    app.get('/api/status', (req, res) => {
       res.status(200).json({ 
         message: 'TitanBot System Online',
         version: pkg.version,
@@ -282,6 +292,7 @@ class TitanBot extends Client {
     cron.schedule('* * * * *', runSafeTask('giveaway_check', () => checkGiveaways(this)));
     cron.schedule('*/15 * * * *', runSafeTask('counter_update', () => this.updateAllCounters()));
     cron.schedule('*/5 * * * *', runSafeTask('autoban_unban_check', () => checkExpiredTrapBans(this)));
+    cron.schedule('0 * * * *', runSafeTask('web_session_cleanup', () => cleanupExpiredSessions(this)));
   }
 
   async updateAllCounters() {

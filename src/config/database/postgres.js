@@ -31,6 +31,8 @@ const configuredTables = {
     approved_admin_roles: 'approved_admin_roles',
     alt_detect_config: 'alt_detect_config',
     alt_detect_flags: 'alt_detect_flags',
+    web_sessions: 'web_sessions',
+    guild_logs: 'guild_logs',
 };
 const allowedTableIdentifiers = new Set([
     'guilds',
@@ -62,6 +64,8 @@ const allowedTableIdentifiers = new Set([
     'approved_admin_roles',
     'alt_detect_config',
     'alt_detect_flags',
+    'web_sessions',
+    'guild_logs',
 ]);
 
 const validatedTables = Object.fromEntries(

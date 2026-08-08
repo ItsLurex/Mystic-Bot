@@ -10,6 +10,7 @@ import {
   fieldsToLines,
   splitComparisonFields,
 } from '../utils/logging/logEmbeds.js';
+import { saveGuildLog } from '../utils/database/guildLogs.js';
 
 const LOG_DESTINATIONS = ['audit', 'applications', 'reports'];
 
@@ -258,6 +259,26 @@ export async function logEvent({
 
     const sent = await channel.send(messageOptions);
     logger.info(`Event logged: ${eventType} in guild ${guildId}`);
+
+    // Also persist to guild_logs for web dashboard (non-blocking)
+    try {
+        await saveGuildLog(client, {
+            guildId,
+            eventType,
+            userId: data?.userId || null,
+            moderatorId: data?.moderatorId || null,
+            channelId: data?.channelId || overrideChannelId || null,
+            data: {
+                title: data?.title,
+                lines: data?.lines?.slice?.(0, 20),
+                description: data?.description?.slice?.(0, 1000),
+                footer: typeof data?.footer === 'object' ? data.footer?.text : data?.footer,
+            },
+        });
+    } catch (err) {
+        logger.debug('Failed to save guild log for web dashboard:', err?.message);
+    }
+
     return sent;
   } catch (error) {
     logger.error('Error in logEvent:', error);

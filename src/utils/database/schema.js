@@ -320,6 +320,27 @@ export const tableStatements = [
         PRIMARY KEY (guild_id, user_id),
         FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.web_sessions} (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(20),
+        data JSONB NOT NULL DEFAULT '{}',
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.guild_logs} (
+        id SERIAL PRIMARY KEY,
+        guild_id VARCHAR(20) NOT NULL,
+        event_type VARCHAR(50) NOT NULL,
+        user_id VARCHAR(20),
+        moderator_id VARCHAR(20),
+        channel_id VARCHAR(20),
+        data JSONB NOT NULL DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE
+    )`,
 ];
 export const indexStatements = [
     `CREATE INDEX IF NOT EXISTS idx_guild_users_guild_id ON ${t.guild_users}(guild_id)`,
@@ -356,6 +377,12 @@ ON ${t.editable_messages}(channel_id)`,
     `CREATE INDEX IF NOT EXISTS idx_scheduled_unbans_unban_at ON ${t.scheduled_unbans}(unban_at)`,
     `CREATE INDEX IF NOT EXISTS idx_alt_detect_flags_guild_id ON ${t.alt_detect_flags}(guild_id)`,
     `CREATE INDEX IF NOT EXISTS idx_alt_detect_flags_status ON ${t.alt_detect_flags}(guild_id, status)`,
+
+    `CREATE INDEX IF NOT EXISTS idx_web_sessions_user_id ON ${t.web_sessions}(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_web_sessions_expires_at ON ${t.web_sessions}(expires_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_guild_logs_guild_id ON ${t.guild_logs}(guild_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_guild_logs_event_type ON ${t.guild_logs}(guild_id, event_type)`,
+    `CREATE INDEX IF NOT EXISTS idx_guild_logs_created_at ON ${t.guild_logs}(guild_id, created_at DESC)`,
 
     ];
 
